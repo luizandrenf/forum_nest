@@ -1,6 +1,7 @@
 import { Controller, Post, UseGuards } from '@nestjs/common'
 import { JwtAuthGuard } from 'src/auth/jwt-auth-guard'
-import { PrismaService } from 'src/prisma/prisma.service'
+import { CurrentUser } from 'src/auth/current-user-decorator'
+import { UserPayload } from 'src/auth/jwt.strategy'
 // import { z } from 'zod'
 
 // const createQuestionBodySchema = z.object({
@@ -14,10 +15,12 @@ import { PrismaService } from 'src/prisma/prisma.service'
 @Controller('/questions')
 @UseGuards(JwtAuthGuard)
 export class CreateQuestionController {
-  constructor(private prisma: PrismaService) {}
+  constructor() {}
 
   @Post()
-  handle() {
-    return 'oi'
+  handle(@CurrentUser() user: UserPayload) {
+    console.log(user)
+
+    return 'ok'
   }
 }
