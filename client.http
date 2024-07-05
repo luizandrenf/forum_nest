@@ -7,16 +7,16 @@ Content-Type: application/json
 {
   "name": "Diego Fernandes",
   "email": "diego@rocketseat.com.br",
-  "password": "1234432"
+  "password": "123456"
 }
 
 ###
 
 # @name autheticate
-POST {{baseUrl}}/accounts/authenticate
+POST {{baseUrl}}/sessions
 Content-Type: application/json
 
 {
   "email": "diego@rocketseat.com.br",
-  "password": "1234432"
+  "password": "123456"
 }
