@@ -1,11 +1,11 @@
-import { AppModule } from '@/app.module'
-import { PrismaService } from '@/prisma/prisma.service'
+import { AppModule } from '@/infra/app.module'
+import { PrismaService } from '@/infra/prisma/prisma.service'
 import { INestApplication } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { Test } from '@nestjs/testing'
 import request from 'supertest'
 
-describe('Create question (E2E)', () => {
+describe('Fetch recent questions (E2E)', () => {
   let app: INestApplication
   let prisma: PrismaService
   let jwt: JwtService
@@ -23,7 +23,7 @@ describe('Create question (E2E)', () => {
     await app.init()
   })
 
-  test('[POST] /questions', async () => {
+  test('[GET] /questions', async () => {
     const user = await prisma.user.create({
       data: {
         name: 'Jhon Doe',
@@ -34,23 +34,34 @@ describe('Create question (E2E)', () => {
 
     const accessToken = jwt.sign({ sub: user.id })
 
-    const response = await request(app.getHttpServer())
-      .post('/questions')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({
-        title: 'New question',
-        content: 'Question content',
-        slug: 'new-question',
-      })
-
-    expect(response.statusCode).toBe(201)
-
-    const questionOnDatabase = await prisma.question.findFirst({
-      where: {
-        title: 'New question',
-      },
+    await prisma.question.createMany({
+      data: [
+        {
+          title: 'Question 1',
+          content: 'Question 1 content',
+          slug: 'question-1',
+          authorId: user.id,
+        },
+        {
+          title: 'Question 2',
+          content: 'Question 2 content',
+          slug: 'question-2',
+          authorId: user.id,
+        },
+      ],
     })
 
-    expect(questionOnDatabase).toBeTruthy()
+    const response = await request(app.getHttpServer())
+      .get('/questions')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send()
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body).toEqual({
+      questions: [
+        expect.objectContaining({ title: 'Question 1' }),
+        expect.objectContaining({ title: 'Question 2' }),
+      ],
+    })
   })
 })
